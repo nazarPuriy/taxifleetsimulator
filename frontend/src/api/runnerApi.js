@@ -3,17 +3,22 @@ import { API_RUNNER_URL } from '../config';
 
 // Obtener un escenario específico
 export const getScenario = async (scenarioId) => {
-  try {
-    const response = await fetch(`${API_RUNNER_URL}/Scenarios/get_scenario/${scenarioId}`);
-    if (!response.ok) {
-      throw new Error('Error al obtener el escenario');
+    try {
+      const response = await fetch(`/Scenarios/get_scenario/${scenarioId}`, {
+        headers: {
+          'accept': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener el escenario');
+      }
+      return await response.json(); // Devuelve los datos del escenario
+    } catch (error) {
+      console.error('Error:', error);
+      return null;
     }
-    return await response.json(); // Devuelve los datos del escenario
-  } catch (error) {
-    console.error('Error:', error);
-    return null;
-  }
-};
+  };
+  
 
 // Crear un nuevo escenario
 export const initializeScenario = async (scenarioData) => {

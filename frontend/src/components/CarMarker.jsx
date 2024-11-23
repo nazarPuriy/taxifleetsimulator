@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { getTaxiPathColor } from '../utils/helpers'; // Import the function
 import taxiIconUrl from '../assets/taxi.png';
 
-const CarMarker = ({ position, id, taxiPath }) => {
+const CarMarker = ({ position, customerPosition, id, taxiPath }) => {
   const taxiName = `Taxi #${id.toString().substring(2, 6)}`; // Taxi name based on id
   const [path, setPath] = useState(taxiPath || []); // Default to empty path if no path is provided
 

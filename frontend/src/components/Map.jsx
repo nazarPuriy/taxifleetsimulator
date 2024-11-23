@@ -1,57 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import CarMarker from './CarMarker';
 import ClientMarker from './ClientMarker';
-import { getVehicles } from '../api/vehicleApi'; // Importamos la función para obtener vehículos
 
-const Map = ({ scenario }) => {
-  const [cars, setCars] = useState([]);
-  const [clients, setClients] = useState([]);
+const Map = ({ cars, clients, isSimulationFinished }) => {
 
-  // Función para actualizar vehículos desde la API
-  const updateVehicles = async (scenarioId) => {
-    if (!scenarioId) return;
-
-    try {
-      const vehicles = await getVehicles(scenarioId); // Llama a la API para obtener vehículos
-      console.log(vehicles)
-      setCars(
-        vehicles.map(vehicle => ({
-          id: vehicle.id,
-          position: [vehicle.coordX, vehicle.coordY], // Actualiza la posición desde la API
-          path: [], // Mantén el path vacío si no necesitas trazar rutas
-        }))
-      );
-    } catch (error) {
-      console.error('Error al actualizar los vehículos:', error);
-    }
-  };
-
-  // Cargar datos iniciales y clientes
-  useEffect(() => {
-    if (scenario) {
-      const initialClients = scenario.customers.map(customer => ({
-        id: customer.id,
-        position: [customer.coordX, customer.coordY], // Usa las coordenadas de los clientes
-      }));
-      setClients(initialClients);
-
-      // Carga inicial de vehículos
-      updateVehicles(scenario.id);
-    }
-  }, [scenario]);
-
-  // Actualiza los vehículos cada cierto tiempo (intervalo)
-  useEffect(() => {
-    if (scenario) {
-      const interval = setInterval(() => {
-        updateVehicles(scenario.id);
-      }, 1000); // Actualiza cada 5 segundos
-
-      return () => clearInterval(interval); // Limpia el intervalo al desmontar
-    }
-  }, [scenario]);
-
+  // Componente para actualizar el tamaño del mapa cuando cambian las dimensiones
   const UpdateMap = () => {
     const map = useMap();
     useEffect(() => {
@@ -61,29 +15,54 @@ const Map = ({ scenario }) => {
   };
 
   return (
-    <MapContainer
-      center={[48.1351, 11.582]} // Coordenadas iniciales (Munich, ejemplo)
-      zoom={13}
-      style={{ height: '100vh', width: '100%' }}
-    >
-      <UpdateMap />
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {/* Renderiza los vehículos */}
-      {cars.map(car => (
-        <CarMarker key={car.id} position={car.position} id={car.id} taxiPath={car.path} />
-      ))}
-      {/* Renderiza los clientes */}
-      {clients.map(client => (
-        <ClientMarker key={client.id} position={client.position} id={client.id} />
-      ))}
-    </MapContainer>
+    <div style={{ position: 'relative' }}>
+      {/* Mostrar mensaje si la simulación ha terminado */}
+      {isSimulationFinished && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 128, 0, 0.8)', // Fondo verde
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '5px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            zIndex: 1000
+          }}
+        >
+          ¡Simulación Finalizada!
+        </div>
+      )}
+
+      {/* Map Container */}
+      <MapContainer
+        center={[48.1351, 11.582]} // Coordenadas iniciales (Munich, ejemplo)
+        zoom={13}
+        style={{ height: '100vh', width: '100%' }}
+      >
+        <UpdateMap />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {/* Renderiza los vehículos */}
+        {cars.map(car => (
+          <CarMarker key={car.id} position={[car.coordX, car.coordY]} customerPosition={[car.customerCoordX, car.customerCoordY]} id={car.id} />
+        ))}
+        {/* Renderiza los clientes que están esperando servicio */}
+        {clients.map(client => (
+          <ClientMarker key={client.id} position={[client.coordX, client.coordY]} id={client.id} awaitingService={client.awaitingService} />
+        ))}
+      </MapContainer>
+    </div>
   );
 };
 
 export default Map;
+
 
 
 

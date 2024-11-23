@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { getScenario, deleteScenario } from '../api/scenarioApi'; // Mantén getScenario para cargar un escenario individual
-import { getAllScenarios } from '../api/scenarioApi'; // Importa getAllScenarios para obtener todos los escenarios
+import {  deleteScenario } from '../api/scenarioApi'; // Importa las funciones para obtener y eliminar escenarios
+import {  getScenario } from '../api/runnerApi'; // Importa las funciones para obtener y eliminar escenarios
+import { getAllScenarios } from '../api/scenarioApi'; // Función para obtener todos los escenarios
 
-const ControlPanel = ({ onCreateScenario, onDeleteScenario }) => {
-  const [scenario, setScenario] = useState(null);
+const ControlPanel = ({ onCreateScenario, onDeleteScenario, scenario }) => {
   const [availableScenarios, setAvailableScenarios] = useState([]); // Lista de escenarios disponibles
   const [showScenarios, setShowScenarios] = useState(false); // Controla la visibilidad de la lista
 
   const handleCreateScenario = async (scenarioId) => {
     try {
-      const fetchedScenario = await getScenario(scenarioId); // Llama a getScenario con el ID
-      setScenario(fetchedScenario);
-      onCreateScenario(fetchedScenario); // Actualiza el estado en MapPage
+      const fetchedScenario = await getScenario(scenarioId); // Obtiene el escenario con el ID
+      onCreateScenario(fetchedScenario); // Pasa el escenario al MapPage
     } catch (error) {
       console.error("Error fetching scenario:", error);
     }
@@ -25,8 +24,7 @@ const ControlPanel = ({ onCreateScenario, onDeleteScenario }) => {
 
     try {
       await deleteScenario(scenario.id);
-      onDeleteScenario(); // Limpia el estado en MapPage
-      setScenario(null);
+      onDeleteScenario(); // Notifica al MapPage para limpiar el estado del escenario
     } catch (error) {
       console.error("Error deleting scenario:", error);
     }
@@ -34,16 +32,16 @@ const ControlPanel = ({ onCreateScenario, onDeleteScenario }) => {
 
   const handleFetchScenarios = async () => {
     try {
-      const scenarios = await getAllScenarios(); // Llama a la función para obtener todos los escenarios
-      setAvailableScenarios(scenarios); // Guarda los escenarios en el estado
-      setShowScenarios(true); // Muestra la lista de escenarios
+      const scenarios = await getAllScenarios(); // Obtiene todos los escenarios disponibles
+      setAvailableScenarios(scenarios);
+      setShowScenarios(true); // Muestra la lista de escenarios disponibles
     } catch (error) {
       console.error("Error fetching scenarios:", error);
     }
   };
 
   const handleSelectScenario = (selectedScenarioId) => {
-    handleCreateScenario(selectedScenarioId); // Actualiza el ID seleccionado en MapPage
+    handleCreateScenario(selectedScenarioId); // Selecciona un escenario
     setShowScenarios(false); // Cierra la lista
   };
 
@@ -53,7 +51,7 @@ const ControlPanel = ({ onCreateScenario, onDeleteScenario }) => {
 
       {/* Botón para obtener el escenario */}
       <button
-        onClick={handleCreateScenario}
+        onClick={() => handleCreateScenario(1)} // Aquí se podría cambiar a un ID dinámico
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
         Obtener Escenario
