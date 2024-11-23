@@ -2,40 +2,55 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import CarMarker from './CarMarker';
 import ClientMarker from './ClientMarker';
-import { generateRandomPosition, generateRealisticTaxiPosition, getRandomInt } from '../utils/helpers';
+import { getVehicles } from '../api/vehicleApi'; // Importamos la función para obtener vehículos
 
-const Map = () => {
+const Map = ({ scenario }) => {
   const [cars, setCars] = useState([]);
   const [clients, setClients] = useState([]);
-  const nCars = 5
 
+  // Función para actualizar vehículos desde la API
+  const updateVehicles = async (scenarioId) => {
+    if (!scenarioId) return;
+
+    try {
+      const vehicles = await getVehicles(scenarioId); // Llama a la API para obtener vehículos
+      console.log(vehicles)
+      setCars(
+        vehicles.map(vehicle => ({
+          id: vehicle.id,
+          position: [vehicle.coordX, vehicle.coordY], // Actualiza la posición desde la API
+          path: [], // Mantén el path vacío si no necesitas trazar rutas
+        }))
+      );
+    } catch (error) {
+      console.error('Error al actualizar los vehículos:', error);
+    }
+  };
+
+  // Cargar datos iniciales y clientes
   useEffect(() => {
-    // Initialize taxis and clients
-    const initialCars = Array(nCars).fill().map((_, index) => ({
-        id: index, // Use the index as the ID
-        position: generateRealisticTaxiPosition([48.1351, 11.582]), // Munich
-        path: [], // Start with empty path
+    if (scenario) {
+      const initialClients = scenario.customers.map(customer => ({
+        id: customer.id,
+        position: [customer.coordX, customer.coordY], // Usa las coordenadas de los clientes
       }));
+      setClients(initialClients);
 
-    const initialClients = Array(10).fill().map(() => ({
-      id: Math.random(),
-      position: generateRandomPosition([48.1351, 11.582]), // Munich
-    }));
+      // Carga inicial de vehículos
+      updateVehicles(scenario.id);
+    }
+  }, [scenario]);
 
-    setCars(initialCars);
-    setClients(initialClients);
+  // Actualiza los vehículos cada cierto tiempo (intervalo)
+  useEffect(() => {
+    if (scenario) {
+      const interval = setInterval(() => {
+        updateVehicles(scenario.id);
+      }, 1000); // Actualiza cada 5 segundos
 
-    // Simulate taxi movement
-    const interval = setInterval(() => {
-      setCars(prevCars => prevCars.map(car => ({
-        ...car,
-        position: generateRealisticTaxiPosition(car.position), // Move the taxi
-        path: [...car.path, car.position], // Update the path with the new position
-      })));
-    }, 5000); // Update every second
-
-    return () => clearInterval(interval); // Cleanup when the component unmounts
-  }, []);
+      return () => clearInterval(interval); // Limpia el intervalo al desmontar
+    }
+  }, [scenario]);
 
   const UpdateMap = () => {
     const map = useMap();
@@ -47,7 +62,7 @@ const Map = () => {
 
   return (
     <MapContainer
-      center={[48.1351, 11.582]} // Munich coordinates
+      center={[48.1351, 11.582]} // Coordenadas iniciales (Munich, ejemplo)
       zoom={13}
       style={{ height: '100vh', width: '100%' }}
     >
@@ -56,11 +71,11 @@ const Map = () => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {/* Render taxis with their path */}
+      {/* Renderiza los vehículos */}
       {cars.map(car => (
         <CarMarker key={car.id} position={car.position} id={car.id} taxiPath={car.path} />
       ))}
-      {/* Render clients */}
+      {/* Renderiza los clientes */}
       {clients.map(client => (
         <ClientMarker key={client.id} position={client.position} id={client.id} />
       ))}
@@ -69,5 +84,7 @@ const Map = () => {
 };
 
 export default Map;
+
+
 
 
