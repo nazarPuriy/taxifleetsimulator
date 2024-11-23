@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-import numpy as np
 
 def calculate_distance_vector(points_1, points_2):
     """
