@@ -1,3 +1,6 @@
+# JetBrains info
+.idea/
+
 # Ignore YAML files
 *.yaml
 *.yml

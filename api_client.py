@@ -114,13 +114,58 @@ def get_vehicle(vehicle_id):
         print(f"Error fetching vehicle {vehicle_id}: {e}")
         return None
 
+############################## RUNNER
+
+BASE_URL_RUNNER = "http://localhost:8090"  # Assuming the scenario runner API is on port 8090
+
+def get_scenario_by_id(scenario_id):
+    """Fetch a specific scenario by ID."""
+    url = f"{BASE_URL_RUNNER}/Scenarios/get_scenario/{scenario_id}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception for 4xx/5xx responses
+        return response.json()  # Convert the response to JSON
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching scenario {scenario_id}: {e}")
+        return None
+
+def initialize_scenario(data):
+    """Initialize a scenario (POST request)."""
+    url = f"{BASE_URL_RUNNER}/Scenarios/initialize_scenario"
+    try:
+        response = requests.post(url, json=data)
+        response.raise_for_status()
+        return response.json()  # Assuming it returns the initialized scenario data
+    except requests.exceptions.RequestException as e:
+        print(f"Error initializing scenario: {e}")
+        return None
+
+def update_scenario(scenario_id, data):
+    """Update a specific scenario (PUT request)."""
+    url = f"{BASE_URL_RUNNER}/Scenarios/update_scenario/{scenario_id}"
+    try:
+        response = requests.put(url, json=data)
+        response.raise_for_status()
+        return response.json()  # Assuming it returns the updated scenario data
+    except requests.exceptions.RequestException as e:
+        print(f"Error updating scenario {scenario_id}: {e}")
+        return None
+
+def launch_scenario(scenario_id):
+    """Launch a scenario (POST request)."""
+    url = f"{BASE_URL_RUNNER}/Runner/launch_scenario/{scenario_id}"
+    try:
+        response = requests.post(url)
+        response.raise_for_status()
+        return response.json()  # Assuming it returns the launched scenario data or status
+    except requests.exceptions.RequestException as e:
+        print(f"Error launching scenario {scenario_id}: {e}")
+        return None
+
 if __name__ == "__main__":
     scenarios = get_all_scenarios()
     scenario0 = scenarios[0]
-    vehicles0 = scenario0["vehicles"]
-    customers0 = scenario0["customers"]
-    vehicle0_0 = vehicles0[0]
-    customer0_0 = customers0[0]
-    print(vehicle0_0)
-    print(customer0_0)
-
+    id = scenario0["id"]
+    # print(initialize_scenario(scenario0))
+    print(launch_scenario(id))
+    print(get_scenario_by_id(id))
