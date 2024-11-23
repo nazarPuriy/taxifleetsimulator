@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import Map from './pages/Map';
+import MapPage from './pages/MapPage';
 
 const App = () => {
   return (
@@ -24,10 +24,10 @@ const App = () => {
               Home
             </Link>
             <Link
-              to="/map"
+              to="/map-page"
               className="text-xl font-medium hover:text-yellow-900 transition duration-300"
             >
-              Map
+              MapPage
             </Link>
           </nav>
         </div>
@@ -37,7 +37,7 @@ const App = () => {
       <main className="flex-grow p-8">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/map" element={<Map />} />
+          <Route path="/map-page" element={<MapPage />} />
         </Routes>
       </main>
 
