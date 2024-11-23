@@ -1,0 +1,29 @@
+# Ignore YAML files
+*.yaml
+*.yml
+
+# Ignore PDF files
+*.pdf
+
+# Ignore node_modules (for Node.js projects)
+node_modules/
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+
+# Ignore IDE specific files (e.g., for VSCode)
+.vscode/
+
+# Ignore log files
+*.log
+
+# Ignore temporary files (e.g., for macOS)
+.DS_Store
+
+# Ignore environment variable files (e.g., .env)
+.env
+
+# Ignore package manager lock files (e.g., for npm or yarn)
+package-lock.json
+yarn.lock
