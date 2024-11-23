@@ -162,10 +162,3 @@ def launch_scenario(scenario_id):
         print(f"Error launching scenario {scenario_id}: {e}")
         return None
 
-if __name__ == "__main__":
-    scenarios = get_all_scenarios()
-    scenario0 = scenarios[0]
-    id = scenario0["id"]
-    # print(initialize_scenario(scenario0))
-    print(launch_scenario(id))
-    print(get_scenario_by_id(id))
