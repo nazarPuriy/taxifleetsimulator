@@ -50,7 +50,7 @@ const Map = ({ cars, clients, isSimulationFinished }) => {
         />
         {/* Renderiza los vehículos */}
         {cars.map(car => (
-          <CarMarker key={car.id} position={[car.coordX, car.coordY]} customerPosition={[car.customerCoordX, car.customerCoordY]} id={car.id} />
+          <CarMarker key={car.id} coordHistory={car.coordHistory} nextDestination={car.nextDestination}  id={car.id} />
         ))}
         {/* Renderiza los clientes que están esperando servicio */}
         {clients.map(client => (

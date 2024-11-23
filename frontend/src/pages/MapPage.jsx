@@ -19,6 +19,7 @@ const MapPage = () => {
   };
 
   const handleSimulationUpdate = (updatedScenario) => {
+    setScenario(updatedScenario)
     setSimulationData({
       cars: updatedScenario.vehicles,
       clients: updatedScenario.customers

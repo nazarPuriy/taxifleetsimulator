@@ -8,43 +8,62 @@ const Simulation = ({ scenario, onSimulationUpdate, onSimulationEnd }) => {
     if (!scenario) return;
 
     const updateData = async () => {
-      try {
-        const updatedScenario = await getScenario(scenario.id);
-        // Pasa los datos actualizados al MapPage
-        // **Nuevo paso**: Actualizamos la posición de los vehículos usando el customerId
-        const vehiclesWithUpdatedPositions = updatedScenario.vehicles.map(vehicle => {
+        try {
+          // Obtener el escenario actualizado
+          const updatedScenario = await getScenario(scenario.id);
+      
+          // Obtener los vehículos con posiciones actualizadas
+          const vehiclesWithUpdatedPositions = updatedScenario.vehicles.map(vehicle => {
             // Buscar el cliente correspondiente por customerId
             const customer = updatedScenario.customers.find(customer => customer.id === vehicle.customerId);
+      
+            // Si el vehículo tiene un historial de coordenadas, lo obtenemos del escenario anterior
+            const previousVehicle = scenario ? scenario.vehicles.find(v => v.id === vehicle.id) : null;
             
-            // Si el cliente es encontrado, actualizar la posición del vehículo
-            if (customer) {
-              vehicle.customerCoordX = customer.coordX;
-              vehicle.customerCoordY = customer.coordY;
+            // Inicializamos coordHistory si no existe o si el vehículo no tiene historial en el escenario anterior
+            if (!previousVehicle.coordHistory) {
+              vehicle.coordHistory = [];
             } else {
-                vehicle.customerCoordX = vehicle.coordX;
-                vehicle.customerCoordY = vehicle.coordY;
+                vehicle.coordHistory = previousVehicle.coordHistory
             }
-  
+      
+            // Comprobamos si la nueva posición del vehículo es distinta a la última posición en coordHistory
+            const newPosition = [vehicle.coordX, vehicle.coordY];
+            const lastPosition = vehicle.coordHistory[vehicle.coordHistory.length - 1];
+      
+            // Si la nueva posición es diferente a la última registrada, la añadimos al historial
+            if (!lastPosition || lastPosition[0] !== newPosition[0] || lastPosition[1] !== newPosition[1]) {
+              vehicle.coordHistory.push(newPosition);
+            }
+      
+            // Ahora actualizamos el destino del vehículo según la posición del cliente
+            if (customer) {
+              if (vehicle.coordX === customer.coordX && vehicle.coordY === customer.coordY) {
+                // Si el vehículo ha llegado al cliente, se establece el destino como el destino final
+                vehicle.nextDestination = [customer.destinationX, customer.destinationY];
+              } else {
+                // Si el vehículo está yendo al cliente, se establece la posición del cliente como el próximo destino
+                vehicle.nextDestination = [customer.coordX, customer.coordY];
+              }
+            } else {
+              // Si no hay cliente, no hay destino
+              vehicle.nextDestination = null;
+            }
+      
             return vehicle;
-        });
-  
-          // Pasamos los vehículos con posiciones actualizadas y el resto del escenario al MapPage
-        onSimulationUpdate({
+          });
+          console.log(vehiclesWithUpdatedPositions)
+          // Pasamos los vehículos actualizados (con coordenadas y destinos) al MapPage
+          onSimulationUpdate({
             ...updatedScenario,
             vehicles: vehiclesWithUpdatedPositions,
-        });
-
-        console.log(vehiclesWithUpdatedPositions)
-
-        // Comprobar si todos los clientes han sido atendidos
-        const remainingClients = updatedScenario.customers.filter(client => client.awaitingService).length;
-        if (remainingClients === 0) {
-          onSimulationEnd();  // Si no hay más clientes esperando, se termina la simulación
+          });
+      
+        } catch (error) {
+          console.error("Error al actualizar los datos del escenario:", error);
         }
-      } catch (error) {
-        console.error("Error al actualizar los datos del escenario:", error);
-      }
-    };
+      };
+      
 
     // Actualizar cada segundo
     const interval = setInterval(updateData, 1000);

@@ -2,33 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getTaxiPathColor } from '../utils/helpers'; // Import the function
 import taxiIconUrl from '../assets/taxi.png';
+import { getTaxiPathColor } from '../utils/helpers'; // Función para obtener el color de la ruta
 
-const CarMarker = ({ position, customerPosition, id, taxiPath }) => {
-  const taxiName = `Taxi #${id.toString().substring(2, 6)}`; // Taxi name based on id
-  const [path, setPath] = useState(taxiPath || []); // Default to empty path if no path is provided
+const CarMarker = ({ coordHistory, nextDestination, id }) => {
+  const taxiName = `Taxi #${id.toString().substring(2, 6)}`; // Nombre del taxi basado en el ID
+  const currentPosition = coordHistory[coordHistory.length-1];
 
+  // Icono del taxi
   const icon = new L.Icon({
-    iconUrl: taxiIconUrl, // Example car icon
-    iconSize: [30, 30], // Size of the icon
+    iconUrl: taxiIconUrl, // URL del icono del taxi
+    iconSize: [30, 30], // Tamaño del icono
   });
 
-  // Update path when position changes
-  useEffect(() => {
-    if (position) {
-      setPath(prevPath => [...prevPath, position]); // Append new position to path
-    }
-  }, [position]);
+  console.log(coordHistory)
+  console.log(nextDestination)
 
-  // Get the color for this taxi's path using the helper function
-  const pathColor = getTaxiPathColor(id); // Call the helper function
+  const createPolylinePoints = (coords) => {
+    const points = [];
+    for (let i = 0; i < coords.length - 1; i++) {
+      points.push([coords[i], coords[i + 1]]); // Añadimos pares consecutivos de coordenadas
+    }
+    return points;
+  };
+
+  // Generar las polylines de la ruta histórica
+  const historicalPolylines = createPolylinePoints(coordHistory);
 
   return (
     <>
-      {/* Draw Polyline (the taxi path) */}
-      <Polyline positions={path} color={pathColor} weight={4} />
-      <Marker position={position} icon={icon}>
+      {/* Dibuja la ruta histórica del taxi */}
+      {(coordHistory && coordHistory.length > 1) &&       historicalPolylines.map((pair, index) => (
+        <Polyline key={index} positions={pair} color="green" weight={4} />
+      ))}
+      
+      {/* Si hay un destino actual, dibujamos la ruta hacia él */}
+      {nextDestination && currentPosition && (
+        <Polyline 
+            positions={[currentPosition, nextDestination]} 
+            color="gray" 
+            weight={4} 
+            dashArray="5,5" 
+        />
+        )}
+      
+      {/* Marcador del taxi */}
+      <Marker position={currentPosition} icon={icon}>
         <Popup>{taxiName}</Popup>
       </Marker>
     </>
