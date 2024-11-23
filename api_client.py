@@ -1,5 +1,4 @@
 import requests
-import requests
 
 # Base URL for the services
 BASE_URL = "http://localhost:8080"  # Assuming the scenario runner API is on port 8080
